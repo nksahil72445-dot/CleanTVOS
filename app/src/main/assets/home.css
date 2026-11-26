@@ -66,3 +66,32 @@ header { position: sticky; top: 0; z-index: 4; background: #0d131de8; }
 .tile.moving { border: 2px dashed #8ad7ff; }
 #home-shortcuts { padding: 30px 0; }
 #home-shortcuts .grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+
+/* Limit backdrop blur to small surfaces on TV hardware. */
+body { --glass-surface: #152234d9; --glass-edge: #bacfe45e; --glass-shadow: #02081559; }
+header { background: #101a28d9; }
+.dock, #panel, .tabs { border-color: var(--glass-edge); box-shadow: 0 14px 38px var(--glass-shadow), inset 0 1px 0 #ffffff28; }
+.dock, #panel { background: linear-gradient(145deg,#738eab32,transparent 65%), var(--glass-surface); }
+@supports (backdrop-filter: blur(6px)) {
+  .dock, #panel { backdrop-filter: blur(6px); }
+}
+.dock .art { height: clamp(56px, 9vw, 142px); }
+#home-shortcuts .grid { grid-template-columns: repeat(6,minmax(0,1fr)); }
+#home-shortcuts .art { height: clamp(34px, 5vw, 75px); font-size: clamp(14px,2vw,28px); }
+#home-shortcuts .tile-name { font-size: 13px; }
+body[data-theme="light"] {
+  color: #17273b;
+  background: radial-gradient(ellipse at 75% 18%, #c6e4ff, #edf4fc 58%, #dce8f5);
+  --glass-surface: #f5faffbf;
+  --glass-edge: #748ea982;
+  --glass-shadow: #354e6b26;
+}
+[data-theme="light"] header { background: #f4f8fce6; border-color: #aebed0; }
+[data-theme="light"] button, [data-theme="light"] input { color: #17273b; background: #f7fbffcc; border-color: #9cb1c6; }
+[data-theme="light"] .tabs button[aria-current] { background: #d1e6f9; color: #17273b; }
+[data-theme="light"] .hero h1 { color: #172f49; text-shadow: 0 0 46px #fff; }
+[data-theme="light"] .hero p, [data-theme="light"] #panel p, [data-theme="light"] #move-help { color: #3c526a; }
+[data-theme="light"] .art { color: #fff; }
+[data-theme="light"] #vpn.connected { color: #176849; }
+[data-theme="light"] #glass-focus { border-color: #116d9f; box-shadow: inset 0 1px 2px #fff8, 0 0 14px #419ac475; }
+[data-theme="light"] #status { background: #f7fbff; }

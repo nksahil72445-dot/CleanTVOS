@@ -9,6 +9,7 @@
   var featured = document.getElementById('featured');
   var slots = Number(localStorage.getItem('slots')) || 4;
   var pins = JSON.parse(localStorage.getItem('pins') || '[]');
+  var theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
   var reduced = localStorage.getItem('motion') === 'true';
   var statusTimer;
   var shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
@@ -128,7 +129,7 @@
       dock.appendChild(tile(byId[id], 'dock'));
     });
     shortcuts.forEach(function (id) {
-      if (byId[id]) shortcutGrid.appendChild(tile(byId[id], 'home'));
+      if (byId[id] && pins.indexOf(id) < 0) shortcutGrid.appendChild(tile(byId[id], 'home'));
     });
     document.getElementById('home-shortcuts').hidden = !shortcutGrid.children.length;
     if (!dock.children.length) {
@@ -216,8 +217,16 @@
       window.showStatus('Dock is full');
       return;
     }
-    if (index >= 0) pins.splice(index, 1);
-    else pins.push(id);
+    if (index >= 0) {
+      pins.splice(index, 1);
+      shortcuts = shortcuts.filter(function (item) { return item !== id; });
+      localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+    }
+    else {
+      pins.push(id);
+      shortcuts = shortcuts.filter(function (item) { return item !== id; });
+      localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+    }
     localStorage.setItem('pins', JSON.stringify(pins));
     hidePanel(false);
     render();
@@ -243,9 +252,14 @@
     var id = button.dataset.app;
     var app = apps.filter(function (entry) { return entry.id === id; })[0];
     if (!app) return;
-    openPanel(app.name, button, [
-      [shortcuts.indexOf(id) < 0 ? 'Add to Home screen' : 'Remove from Home screen', function () { toggleHome(id); }],
-      [pins.indexOf(id) < 0 ? 'Add to Dock' : 'Remove from Dock', function () { toggleDock(id); }],
+    var inDock = pins.indexOf(id) >= 0;
+    var choices = [];
+    if (!inDock) choices.push([shortcuts.indexOf(id) < 0 ? 'Add to Home screen' : 'Remove from Home screen', function () { toggleHome(id); }]);
+    choices.push([
+      inDock ? 'Remove from Dock' : shortcuts.indexOf(id) >= 0 ? 'Move to Dock' : 'Add to Dock',
+      function () { toggleDock(id); }
+    ]);
+    choices.push(
       ['Move in Apps', function () {
         hidePanel(false);
         showScreen(true);
@@ -257,7 +271,8 @@
         document.getElementById('app-' + id).focus();
       }],
       ['Back', function () { hidePanel(true); }]
-    ]);
+    );
+    openPanel(app.name, button, choices);
   }
 
   function cancelHold() {
@@ -284,6 +299,12 @@
     }
     function appearance() {
       openPanel('Appearance', anchor, [
+        ['Theme · ' + (theme === 'dark' ? 'Dark' : 'Light'), function () {
+          theme = theme === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('theme', theme);
+          document.body.dataset.theme = theme;
+          this.textContent = 'Theme · ' + (theme === 'dark' ? 'Dark' : 'Light');
+        }],
         ['Reduce motion · ' + (reduced ? 'On' : 'Off'), function () {
           reduced = !reduced;
           localStorage.setItem('motion', reduced);
@@ -438,6 +459,7 @@
   document.body.classList.toggle('reduced', reduced);
   document.getElementById('clock').hidden = !showClock;
   document.getElementById('date').hidden = !showDate;
+  document.body.dataset.theme = theme;
   clock();
   setInterval(clock, 15000);
   if (native) window.refreshHome();
